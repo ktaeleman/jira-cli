@@ -1,7 +1,9 @@
 package api
 
 import (
+	"bytes"
 	"time"
+	"runtime"
 
 	"github.com/spf13/viper"
 	"github.com/zalando/go-keyring"
@@ -38,6 +40,9 @@ func Client(config jira.Config) *jira.Client {
 	}
 	if config.APIToken == "" {
 		secret, _ := keyring.Get("jira-cli", config.Login)
+		if runtime.GOOS == "windows" {
+			secret = string(bytes.Replace([]byte(secret), []byte("\000"), nil, -1))
+		}
 		config.APIToken = secret
 	}
 	if config.AuthType == nil {
